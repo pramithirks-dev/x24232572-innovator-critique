@@ -1,6 +1,11 @@
+/* ==========================================================
+   GajaLens - Founder's Critique Brief - print stylesheet
+   A single, consistent professional type system for the PDF.
+   ========================================================== */
+
 @page {
   size: A4;
-  margin: 18mm 16mm 18mm 16mm;
+  margin: 20mm 18mm 20mm 18mm;
 }
 
 :root {
@@ -10,99 +15,129 @@
   --copper-light: #D69654;
   --bone: #F5F1E8;
   --bone-warm: #EBE3D0;
-  --ink: #0A0A0A;
+  --ink: #1A1A1A;
+  --mute: rgba(26, 26, 26, 0.62);
+  --rule: rgba(30, 61, 47, 0.18);
 }
 
-html { font-size: 10.5pt; }
-
-body {
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  color: #0A0A0A;
-  line-height: 1.5;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-  background: #fff;
+/* ---------- GLOBAL RESET ---------- */
+html {
+  font-size: 11pt;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
+html, body, p, h1, h2, h3, h4, h5, h6, ul, ol, li, table, th, td, blockquote, pre, code, div, span, em, strong {
+  font-family: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  color: var(--ink);
+}
 
-h1 {
-  font-family: Georgia, 'Fraunces', serif;
-  font-size: 26pt;
+body {
+  margin: 0;
+  padding: 0;
+  line-height: 1.55;
+  font-size: 11pt;
+  font-weight: 400;
+  max-width: none;
+  background: #ffffff;
+}
+
+/* ---------- HEADINGS ---------- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  font-weight: 700;
   color: var(--forest);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin: 0 0 14pt 0;
-  padding-bottom: 10pt;
-  border-bottom: 3pt solid var(--copper);
+  letter-spacing: -0.01em;
   page-break-after: avoid;
 }
 
+h1 {
+  font-size: 24pt;
+  line-height: 1.1;
+  margin: 0 0 14pt 0;
+  padding-bottom: 10pt;
+  border-bottom: 2pt solid var(--copper);
+}
+
 h2 {
-  font-family: Georgia, 'Fraunces', serif;
-  font-size: 18pt;
-  color: var(--forest);
-  letter-spacing: -0.015em;
+  font-size: 17pt;
+  line-height: 1.2;
   margin: 28pt 0 10pt 0;
-  padding-top: 10pt;
-  border-top: 1pt solid var(--bone-warm);
-  page-break-after: avoid;
+  padding-top: 12pt;
+  border-top: 0.75pt solid var(--rule);
   page-break-before: auto;
 }
 
 h3 {
-  font-family: Georgia, 'Fraunces', serif;
   font-size: 13pt;
-  color: var(--forest);
+  line-height: 1.25;
   margin: 18pt 0 6pt 0;
-  page-break-after: avoid;
 }
 
 h4 {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 10pt;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: 11pt;
+  font-style: italic;
   color: var(--copper);
   margin: 14pt 0 6pt 0;
   font-weight: 700;
 }
 
-p { margin: 0 0 8pt 0; }
-
-strong { color: var(--forest); font-weight: 700; }
-em { font-style: italic; }
-
-a { color: var(--copper); text-decoration: none; word-break: break-all; }
-
-hr {
-  border: none;
-  border-top: 1pt dashed var(--bone-warm);
-  margin: 16pt 0;
+/* ---------- BODY TEXT ---------- */
+p, li, blockquote {
+  font-family: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  font-size: 11pt;
+  line-height: 1.55;
+  font-weight: 400;
+  color: var(--ink);
 }
 
+p {
+  margin: 0 0 9pt 0;
+  text-align: left;
+}
+
+strong, b {
+  font-weight: 700;
+  color: var(--forest);
+}
+
+em, i {
+  font-style: italic;
+  color: var(--ink);
+}
+
+a {
+  color: var(--copper);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+/* ---------- LISTS ---------- */
 ul, ol {
-  margin: 0 0 8pt 18pt;
+  margin: 4pt 0 10pt 20pt;
   padding: 0;
 }
-li { margin-bottom: 4pt; }
+li {
+  margin-bottom: 4pt;
+}
 
+/* ---------- BLOCKQUOTE ---------- */
 blockquote {
   border-left: 3pt solid var(--copper);
-  padding: 2pt 12pt;
-  margin: 8pt 0;
-  color: rgba(10, 10, 10, 0.7);
+  padding: 4pt 0 4pt 14pt;
+  margin: 10pt 0;
+  color: var(--mute);
   font-style: italic;
 }
 
-code {
-  font-family: 'Consolas', 'Menlo', 'SFMono-Regular', monospace;
-  font-size: 0.88em;
-  background: var(--bone-warm);
+/* ---------- INLINE CODE / FILENAMES ---------- */
+code, kbd, samp {
+  font-family: 'Consolas', 'Menlo', 'Courier New', monospace;
+  font-size: 9.5pt;
+  background: rgba(184, 115, 51, 0.09);
   padding: 1pt 4pt;
   border-radius: 2pt;
   color: var(--forest-deep);
+  font-weight: 500;
   word-break: break-all;
 }
 
@@ -112,77 +147,103 @@ pre {
   border-radius: 4pt;
   overflow-x: auto;
   font-size: 9pt;
-  line-height: 1.35;
+  line-height: 1.4;
+  margin: 10pt 0;
 }
-pre code { background: none; padding: 0; }
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
 
-/* Tables - the critical rendering */
+/* ---------- RULE ---------- */
+hr {
+  border: none;
+  border-top: 0.75pt solid var(--rule);
+  margin: 18pt 0;
+  height: 0;
+}
+
+/* ---------- TABLES ---------- */
 table {
   width: 100%;
   border-collapse: collapse;
   margin: 10pt 0 14pt 0;
-  font-size: 8.5pt;
+  font-size: 9pt;
   page-break-inside: auto;
+  font-family: 'Georgia', 'Cambria', 'Times New Roman', serif;
 }
 
 thead { display: table-header-group; }
-tr { page-break-inside: avoid; page-break-after: auto; }
+tbody tr { page-break-inside: avoid; page-break-after: auto; }
 
 th {
   background: var(--forest);
-  color: var(--bone);
+  color: #ffffff;
   text-align: left;
   padding: 6pt 8pt;
   font-weight: 700;
-  font-size: 8pt;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 8.5pt;
+  letter-spacing: 0.02em;
   border: 0.5pt solid var(--forest);
   vertical-align: top;
+  font-family: 'Georgia', serif;
 }
 
 td {
-  padding: 5pt 8pt;
-  border: 0.5pt solid var(--bone-warm);
+  padding: 6pt 8pt;
+  border: 0.5pt solid var(--rule);
   vertical-align: top;
-  line-height: 1.4;
+  line-height: 1.45;
+  font-size: 9pt;
+  font-family: 'Georgia', 'Cambria', serif;
+  color: var(--ink);
 }
 
 tbody tr:nth-child(even) td {
-  background: #FAF7EF;
+  background: #FBF8F1;
 }
 
-td code {
-  font-size: 7.5pt;
-  background: rgba(184, 115, 51, 0.08);
+td code,
+td strong {
+  font-size: inherit;
+}
+
+td em {
+  font-style: italic;
   color: var(--forest-deep);
+  font-weight: 500;
 }
 
-/* First paragraph after heading has less top margin */
-h1 + p, h2 + p, h3 + p { margin-top: 0; }
-
-/* Document metadata block at top */
-body > p:nth-of-type(1),
-body > p:nth-of-type(2),
-body > p:nth-of-type(3),
-body > p:nth-of-type(4) {
-  margin-bottom: 3pt;
-  font-size: 9.5pt;
+/* ---------- METADATA HEADER BLOCK (first 4 paragraphs under H1) ----------
+   These paragraphs carry Prepared by / Prepared for / Date / Status.
+   They share a single size and colour but sit visually in a header band. */
+h1 + p {
+  margin-top: 2pt;
+  color: var(--mute);
+  font-size: 10.5pt;
+  font-style: normal;
+}
+h1 + p + p,
+h1 + p + p + p,
+h1 + p + p + p + p {
+  margin-top: 0;
+  color: var(--mute);
+  font-size: 10.5pt;
 }
 
-/* Force page breaks before top-level sections */
-h2 {
-  page-break-before: auto;
-}
-
-/* Avoid widow/orphan lines */
-p, li { orphans: 2; widows: 2; }
-
-/* End marker */
+/* ---------- END MARKER ---------- */
 body > p:last-of-type {
   text-align: center;
+  color: var(--mute);
   font-style: italic;
-  color: rgba(10, 10, 10, 0.5);
   margin-top: 24pt;
-  font-size: 9pt;
+  font-size: 10pt;
+  border-top: 0.5pt solid var(--rule);
+  padding-top: 10pt;
 }
+
+/* ---------- WIDOW / ORPHAN CONTROL ---------- */
+p, li { orphans: 2; widows: 2; }
+h1, h2, h3, h4 { page-break-after: avoid; }
+table { page-break-inside: auto; }
