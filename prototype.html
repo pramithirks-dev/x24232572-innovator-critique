@@ -441,11 +441,14 @@ function pushMsg(html, who){
 }
 
 // lighting → detection fidelity multiplier
+// Under worse lighting, both the max detection range shrinks AND the
+// peak achievable confidence drops. All four conditions can still
+// cross the 0.55 trigger threshold.
 const LIGHT = {
-  day:      { mult:1.00, penalty:  0, label:'daylight' },
-  dusk:     { mult:0.88, penalty: 40, label:'dusk' },
-  moonless: { mult:0.72, penalty: 90, label:'moonless night' },
-  fog:      { mult:0.58, penalty:140, label:'monsoon fog' },
+  day:      { mult:0.96, penalty:  0, label:'daylight' },
+  dusk:     { mult:0.92, penalty: 20, label:'dusk' },
+  moonless: { mult:0.84, penalty: 40, label:'moonless night' },
+  fog:      { mult:0.74, penalty: 60, label:'monsoon fog' },
 };
 
 const HERD = {
@@ -565,16 +568,16 @@ function minHerdDistance(){
   return min;
 }
 
-// confidence curve: rises from 0 at >350 px range to 0.96 at close
-// then modulated by lighting.
+// Confidence rises linearly from 0 at maxRange to L.mult near the pod.
+// maxRange shrinks with lighting penalty. Trigger threshold is 0.55,
+// so all four lighting conditions can fire detection eventually.
 function detectionConfidence(rangePx){
   const meters = pxToMetres(rangePx);
   const L = LIGHT[lighting];
-  if(meters > 280 + L.penalty) return 0;
-  const window = 260 - L.penalty*0.4;
-  const raw = 1 - Math.max(0, (meters - 40) / window);
-  const conf = Math.max(0, Math.min(0.97, raw * L.mult));
-  return conf;
+  const maxRange = 260 - L.penalty;
+  if(meters > maxRange) return 0;
+  const t = Math.max(0, Math.min(1, (maxRange - meters) / (maxRange - 30)));
+  return Math.min(0.97, t * L.mult);
 }
 
 function moveHerd(dx){
@@ -643,7 +646,7 @@ async function runScenario(){
       beeRing.setAttribute('cx', dX);
       beeRing.setAttribute('cy', dY);
 
-      moveHerd(1.8);
+      moveHerd(2.0);
       const rPx = minHerdDistance();
       const meters = pxToMetres(rPx);
       hudRange.textContent = meters + ' m';
@@ -651,8 +654,8 @@ async function runScenario(){
       hudConf.textContent = (conf*100).toFixed(0) + '%';
       mConf.textContent = (conf*100).toFixed(0) + '%';
 
-      // detection
-      if(stage==='patrol' && conf >= 0.78){
+      // detection - trigger at 0.55 so every lighting condition can fire
+      if(stage==='patrol' && conf >= 0.55){
         detectedAt = performance.now();
         stage = 'detected';
         setStatus('Herd detected', 'alert');
@@ -664,25 +667,27 @@ async function runScenario(){
         log('det', `Re-ID: ${individuals.map(i=>i.name).join(', ')}.`);
       }
 
-      // rumble deterrent
+      // rumble deterrent - herd slows as the soft cue registers
       if(stage==='detected' && performance.now() - detectedAt > 600){
         stage = 'rumble';
         mStage.textContent = 'Infrasound';
         log('act', 'Stage 1: infrasound rumble 18 Hz · bull warning cadence.');
         rumbleRing.setAttribute('opacity','0.7');
         anim(rumbleRing,'r',0,180,800);
+        [...herdG.children].forEach(el=>{
+          el.dataset.vx = parseFloat(el.dataset.vx) * 0.45;
+        });
       }
 
-      // bee-buzz
+      // bee-buzz - full retreat toward the forest
       if(stage==='rumble' && performance.now() - detectedAt > 1600){
         stage = 'bee';
         mStage.textContent = 'Bee-buzz';
         log('act', 'Stage 2: bee-buzz playback 20 Hz · aversive cue.');
         beeRing.setAttribute('opacity','0.8');
         anim(beeRing,'r',0,260,900);
-        // herd begins to retreat
         [...herdG.children].forEach(el=>{
-          el.dataset.vx = -0.8 - Math.random()*0.3;
+          el.dataset.vx = -(1.8 + Math.random()*0.4);
         });
       }
 
@@ -704,10 +709,12 @@ async function runScenario(){
         log('ok', `Herd turned. Sentinel Pod-042 returning to patrol.`);
       }
 
-      if(stage==='done' && minHerdDistance() > 400){
+      // Close only when all elephants are visibly back at the forest edge
+      const allInForest = [...herdG.children].every(el => parseFloat(el.dataset.x) < 440);
+      if(stage==='done' && allInForest){
         setStatus('Idle', '');
         mStage.textContent = 'Patrol';
-        log('ok', `All individuals beyond 220 m. Encounter closed · logged to GajaNet.`);
+        log('ok', `Herd back inside the forest corridor. Encounter closed · logged to GajaNet.`);
         return resolve();
       }
 
