@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>GajaLens — Alpha Prototype</title>
+<meta name="description" content="Interactive alpha of the GajaLens Sentinel Pod: detect an approaching herd, deploy a graduated non-lethal deterrent, alert the farmer — all in the browser." />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E3D2F'/%3E%3Cpath d='M20 22c0-5 4-9 9-9s9 4 9 9v6c4 0 8 3 8 8v8H22v-8c0-4 3-7 7-8v-6c0-2-2-4-4-4s-4 2-4 4z' fill='%23B87333'/%3E%3Ccircle cx='28' cy='26' r='1.6' fill='%231E3D2F'/%3E%3C/svg%3E" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,700;9..144,900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#1E3D2F;
+    --forest-deep:#0F2118;
+    --forest-mid:#2C5944;
+    --copper:#B87333;
+    --copper-light:#D69654;
+    --bone:#F5F1E8;
+    --bone-warm:#EBE3D0;
+    --ink:#0A0A0A;
+    --ok:#7DD681;
+    --warn:#E8B04A;
+    --alert:#E85D5D;
+    --serif:'Fraunces',Georgia,serif;
+    --sans:'Inter',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--sans);background:var(--bone);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:inherit}
+
+  /* NAV */
+  nav{padding:20px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(245,241,232,0.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(30,61,47,0.08);position:sticky;top:0;z-index:50}
+  .logo{font-family:var(--serif);font-weight:900;font-size:22px;color:var(--forest);letter-spacing:-0.02em;display:flex;align-items:center;gap:10px}
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--forest);display:grid;place-items:center;color:var(--copper);font-size:16px}
+  .nav-right{display:flex;gap:24px;align-items:center;font-size:13px}
+  .nav-right a{color:rgba(10,10,10,0.6);font-weight:500}
+  .nav-right a:hover{color:var(--copper)}
+  .alpha-badge{background:var(--copper);color:var(--bone);padding:6px 14px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
+
+  /* HEADER */
+  header{padding:48px 40px 24px;max-width:1440px;margin:0 auto}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--copper);margin-bottom:16px}
+  .eyebrow::before{content:'';width:32px;height:1px;background:var(--copper)}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(36px,4.2vw,56px);line-height:1;letter-spacing:-0.03em;color:var(--forest);margin-bottom:14px}
+  h1 em{font-style:italic;font-weight:300;color:var(--copper)}
+  .lede{font-size:17px;color:rgba(10,10,10,0.68);max-width:780px}
+
+  /* MAIN LAYOUT */
+  main{max-width:1440px;margin:0 auto;padding:24px 40px 60px;display:grid;grid-template-columns:1.65fr 1fr;gap:32px}
+
+  /* SCENE */
+  .scene-card{background:var(--forest-deep);border-radius:24px;overflow:hidden;box-shadow:0 30px 70px rgba(15,33,24,0.25);display:flex;flex-direction:column}
+  .scene-header{padding:20px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(245,241,232,0.08)}
+  .scene-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--bone);letter-spacing:-0.01em}
+  .scene-status{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--copper-light);display:flex;align-items:center;gap:10px}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(125,214,129,0.6);animation:pulse 2s infinite}
+  .status-dot.alert{background:var(--alert);box-shadow:0 0 0 0 rgba(232,93,93,0.6)}
+  .status-dot.warn{background:var(--warn)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(125,214,129,0.6)}70%{box-shadow:0 0 0 10px rgba(125,214,129,0)}100%{box-shadow:0 0 0 0 rgba(125,214,129,0)}}
+
+  .scene{aspect-ratio:16/9;position:relative;background:linear-gradient(180deg,#0a1a14 0%,#0F2118 50%,#132922 100%)}
+  .scene svg{width:100%;height:100%;display:block}
+
+  .scene-meta{padding:22px 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;border-top:1px solid rgba(245,241,232,0.08)}
+  .meta{border-left:2px solid var(--copper);padding-left:14px}
+  .meta-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,241,232,0.55);margin-bottom:6px}
+  .meta-value{font-family:var(--serif);font-size:26px;font-weight:900;color:var(--bone);line-height:1;letter-spacing:-0.02em}
+  .meta-value.copper{color:var(--copper-light)}
+  .meta-value.alert{color:var(--alert)}
+  .meta-value.ok{color:var(--ok)}
+
+  /* PHONE */
+  .phone-col{display:flex;flex-direction:column;gap:24px}
+  .phone{background:var(--bone);border-radius:28px;padding:32px 28px;box-shadow:0 30px 70px rgba(15,33,24,0.18);border:1px solid rgba(30,61,47,0.08);flex:1;display:flex;flex-direction:column}
+  .phone-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid rgba(30,61,47,0.08);margin-bottom:18px}
+  .phone-name{font-family:var(--serif);font-weight:700;font-size:17px;color:var(--forest)}
+  .phone-time{font-size:11px;color:rgba(10,10,10,0.45);letter-spacing:0.04em}
+  .phone-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;max-height:560px;min-height:400px;padding-right:4px}
+  .phone-body::-webkit-scrollbar{width:4px}
+  .phone-body::-webkit-scrollbar-thumb{background:rgba(184,115,51,0.3);border-radius:4px}
+  .msg{background:var(--bone-warm);border-radius:14px;padding:14px 18px;font-size:13px;line-height:1.5;color:var(--ink);max-width:92%;animation:slide-in .4s ease}
+  .msg.gaja{background:var(--forest);color:var(--bone);align-self:flex-start;border-top-left-radius:4px}
+  .msg.farmer{align-self:flex-end;border-top-right-radius:4px}
+  .msg-head{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-bottom:6px;opacity:0.7}
+  .msg.gaja .msg-head{color:var(--copper-light)}
+  .msg-body b{font-family:var(--serif);font-weight:700;font-size:15px}
+  .phone-empty{text-align:center;color:rgba(10,10,10,0.4);font-size:13px;padding:60px 20px;font-style:italic}
+  @keyframes slide-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  /* CONTROLS */
+  .controls{background:var(--bone);border-radius:20px;padding:26px 28px;box-shadow:0 20px 50px rgba(15,33,24,0.12)}
+  .controls h3{font-family:var(--serif);font-size:16px;color:var(--forest);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+  .controls h3 .hint{font-family:var(--sans);font-size:10px;color:var(--copper);letter-spacing:0.12em;text-transform:uppercase;font-weight:600}
+  .ctrl-row{margin-bottom:18px}
+  .ctrl-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;color:rgba(10,10,10,0.55);margin-bottom:8px;display:block}
+  .seg{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;background:var(--bone-warm);padding:4px;border-radius:10px}
+  .seg.three{grid-template-columns:1fr 1fr 1fr}
+  .seg button{background:transparent;border:none;padding:10px 6px;font-size:11px;font-weight:600;color:rgba(10,10,10,0.55);cursor:pointer;border-radius:8px;transition:all .2s;font-family:var(--sans);letter-spacing:0.02em}
+  .seg button.active{background:var(--forest);color:var(--bone)}
+  .seg button:disabled{opacity:0.4;cursor:not-allowed}
+  .run-btn{width:100%;background:var(--forest);color:var(--bone);border:none;padding:18px;border-radius:12px;font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all .25s;font-family:var(--sans);box-shadow:0 8px 24px rgba(30,61,47,0.2)}
+  .run-btn:hover:not(:disabled){background:var(--copper);transform:translateY(-1px)}
+  .run-btn:disabled{opacity:0.5;cursor:not-allowed}
+  .run-btn.reset{background:var(--copper)}
+  .run-btn.reset:hover{background:var(--copper-light)}
+
+  /* LOG */
+  .log{grid-column:1 / -1;background:var(--bone);border-radius:20px;padding:24px 28px;box-shadow:0 20px 50px rgba(15,33,24,0.1)}
+  .log h3{font-family:var(--serif);font-size:16px;color:var(--forest);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+  .log-list{font-family:'SFMono-Regular',Menlo,Consolas,monospace;font-size:12px;color:rgba(10,10,10,0.75);display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto}
+  .log-line{display:grid;grid-template-columns:90px 110px 1fr;gap:14px;align-items:baseline;padding:6px 0;border-bottom:1px dashed rgba(30,61,47,0.08)}
+  .log-time{color:rgba(10,10,10,0.45);font-weight:500}
+  .log-tag{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;padding:2px 8px;border-radius:4px;justify-self:start}
+  .log-tag.info{background:rgba(30,61,47,0.08);color:var(--forest)}
+  .log-tag.det{background:rgba(184,115,51,0.15);color:var(--copper)}
+  .log-tag.act{background:rgba(30,61,47,0.9);color:var(--bone)}
+  .log-tag.alert{background:rgba(232,93,93,0.15);color:var(--alert)}
+  .log-tag.ok{background:rgba(125,214,129,0.15);color:#2a7a35}
+
+  footer{text-align:center;padding:32px 40px;font-size:12px;color:rgba(10,10,10,0.5);letter-spacing:0.06em;border-top:1px solid rgba(30,61,47,0.08);max-width:1440px;margin:0 auto}
+  footer a{color:var(--copper);font-weight:600;text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  @media (max-width:960px){
+    main{grid-template-columns:1fr;padding:20px}
+    .scene-meta{grid-template-columns:1fr 1fr;gap:12px}
+    nav{padding:16px 20px}
+    header{padding:32px 20px 16px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-mark">G</div>GajaLens</div>
+  <div class="nav-right">
+    <a href="index.html">Landing</a>
+    <a href="pitch.html">Pitch</a>
+    <span class="alpha-badge">Alpha · Interactive</span>
+  </div>
+</nav>
+
+<header>
+  <div class="eyebrow">Alpha Prototype · Running in your browser</div>
+  <h1>The Sentinel Pod,<br/><em>simulated.</em></h1>
+  <p class="lede">A working alpha of the core GajaLens loop: detect an approaching herd, run graduated non-lethal deterrents, and push a respectful alert to the farmer. No drone required — every element below is a live interaction you can drive. Choose a scenario, press Run.</p>
+</header>
+
+<main>
+
+  <!-- SCENE -->
+  <div class="scene-card">
+    <div class="scene-header">
+      <div class="scene-title">Sentinel Pod · field view</div>
+      <div class="scene-status"><span class="status-dot" id="statusDot"></span><span id="statusText">Idle</span></div>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" id="scene">
+        <defs>
+          <radialGradient id="moonGlow" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="#EBE3D0" stop-opacity="0.7"/>
+            <stop offset="70%" stop-color="#EBE3D0" stop-opacity="0.1"/>
+            <stop offset="100%" stop-color="#EBE3D0" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1E3D2F"/>
+            <stop offset="100%" stop-color="#0a1a14"/>
+          </linearGradient>
+          <radialGradient id="detRing" cx="50%" cy="50%">
+            <stop offset="70%" stop-color="#B87333" stop-opacity="0"/>
+            <stop offset="98%" stop-color="#B87333" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#B87333" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Sky -->
+        <rect width="1600" height="700" fill="#0a1a14"/>
+        <!-- Moon -->
+        <circle cx="1400" cy="140" r="38" fill="#EBE3D0" opacity="0.7"/>
+        <circle cx="1400" cy="140" r="90" fill="url(#moonGlow)"/>
+        <!-- Stars -->
+        <g opacity="0.6" fill="#F5F1E8">
+          <circle cx="200" cy="80" r="1.2"/><circle cx="520" cy="40" r="0.9"/>
+          <circle cx="800" cy="100" r="1.4"/><circle cx="1100" cy="60" r="0.9"/>
+          <circle cx="300" cy="150" r="1"/><circle cx="900" cy="200" r="0.8"/>
+          <circle cx="1250" cy="110" r="1.2"/><circle cx="650" cy="170" r="1"/>
+        </g>
+
+        <!-- Forest edge (left) -->
+        <g id="forestEdge">
+          <path d="M0,700 L0,400 Q60,380 80,420 Q110,360 140,400 Q180,340 220,400 Q260,360 300,420 Q340,360 380,400 Q410,340 440,400 L440,700 Z" fill="#0a1a14" stroke="#1E3D2F" stroke-width="2"/>
+          <path d="M0,700 L0,480 Q40,460 70,490 Q100,440 130,480 Q160,440 190,480 Q220,440 250,480 L250,700 Z" fill="#0F2118"/>
+        </g>
+
+        <!-- Coconut grove (right) -->
+        <g id="grove">
+          <rect x="900" y="680" width="700" height="20" fill="url(#ground)"/>
+          <!-- palm 1 -->
+          <g transform="translate(1000,680)">
+            <rect x="-4" y="-180" width="8" height="180" fill="#2C5944"/>
+            <path d="M0,-180 Q-50,-200 -90,-170 M0,-180 Q50,-200 90,-170 M0,-180 Q-30,-220 -20,-250 M0,-180 Q30,-220 20,-250 M0,-180 Q-60,-190 -100,-200 M0,-180 Q60,-190 100,-200" stroke="#2C5944" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </g>
+          <g transform="translate(1150,680)">
+            <rect x="-4" y="-210" width="8" height="210" fill="#2C5944"/>
+            <path d="M0,-210 Q-55,-230 -95,-200 M0,-210 Q55,-230 95,-200 M0,-210 Q-30,-250 -15,-280 M0,-210 Q30,-250 15,-280 M0,-210 Q-70,-220 -110,-230 M0,-210 Q70,-220 110,-230" stroke="#2C5944" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </g>
+          <g transform="translate(1300,680)">
+            <rect x="-4" y="-190" width="8" height="190" fill="#2C5944"/>
+            <path d="M0,-190 Q-50,-210 -90,-180 M0,-190 Q50,-210 90,-180 M0,-190 Q-28,-230 -18,-260 M0,-190 Q28,-230 18,-260 M0,-190 Q-65,-200 -105,-210 M0,-190 Q65,-200 105,-210" stroke="#2C5944" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </g>
+          <g transform="translate(1460,680)">
+            <rect x="-4" y="-170" width="8" height="170" fill="#2C5944"/>
+            <path d="M0,-170 Q-45,-190 -80,-160 M0,-170 Q45,-190 80,-160 M0,-170 Q-25,-210 -15,-240 M0,-170 Q25,-210 15,-240 M0,-170 Q-58,-180 -95,-190 M0,-170 Q58,-180 95,-190" stroke="#2C5944" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <!-- Ground plane -->
+        <rect y="680" width="1600" height="220" fill="url(#ground)"/>
+        <!-- Perimeter line -->
+        <line x1="900" y1="660" x2="900" y2="720" stroke="#B87333" stroke-width="2" stroke-dasharray="8 6" opacity="0.7"/>
+        <text x="905" y="735" fill="#B87333" font-size="16" font-family="Inter" font-weight="600" letter-spacing="2" opacity="0.8">FARM PERIMETER</text>
+
+        <!-- Sentinel Pod -->
+        <g id="pod" transform="translate(1200,580)">
+          <polygon points="-22,0 -11,-22 11,-22 22,0 11,22 -11,22" fill="#B87333" stroke="#1E3D2F" stroke-width="2"/>
+          <circle cx="0" cy="0" r="4" fill="#1E3D2F"/>
+          <text y="40" text-anchor="middle" fill="#B87333" font-size="12" font-family="Inter" font-weight="700" letter-spacing="1">POD-042</text>
+        </g>
+
+        <!-- Drone Karuna -->
+        <g id="drone" transform="translate(1200,480)" opacity="0">
+          <circle cx="0" cy="0" r="10" fill="#F5F1E8"/>
+          <line x1="-18" y1="-18" x2="18" y2="18" stroke="#B87333" stroke-width="2"/>
+          <line x1="18" y1="-18" x2="-18" y2="18" stroke="#B87333" stroke-width="2"/>
+          <circle cx="-18" cy="-18" r="4" fill="#B87333"/>
+          <circle cx="18" cy="-18" r="4" fill="#B87333"/>
+          <circle cx="-18" cy="18" r="4" fill="#B87333"/>
+          <circle cx="18" cy="18" r="4" fill="#B87333"/>
+        </g>
+
+        <!-- Tether -->
+        <line id="tether" x1="1200" y1="580" x2="1200" y2="480" stroke="#B87333" stroke-width="1" stroke-dasharray="2 3" opacity="0"/>
+
+        <!-- Detection ring (drawn dynamically) -->
+        <circle id="detectionRing" cx="1200" cy="480" r="0" fill="none" stroke="#B87333" stroke-width="2" stroke-dasharray="6 6" opacity="0"/>
+
+        <!-- Deterrent rings -->
+        <circle id="rumbleRing" cx="1200" cy="480" r="0" fill="none" stroke="#D69654" stroke-width="3" opacity="0"/>
+        <circle id="beeRing" cx="1200" cy="480" r="0" fill="none" stroke="#E8B04A" stroke-width="2" opacity="0"/>
+
+        <!-- Elephants container -->
+        <g id="herd"></g>
+
+        <!-- HUD -->
+        <g id="hud" opacity="0">
+          <rect x="40" y="40" width="340" height="110" rx="8" fill="#0F2118" stroke="#B87333" stroke-width="1" opacity="0.9"/>
+          <text x="56" y="66" fill="#B87333" font-size="10" font-family="Inter" font-weight="700" letter-spacing="2">KARUNA · LIVE</text>
+          <text x="56" y="94" fill="#F5F1E8" font-size="22" font-family="Fraunces" font-weight="700" id="hudRange">— m</text>
+          <text x="170" y="94" fill="#D69654" font-size="12" font-family="Inter" font-weight="600" letter-spacing="1">RANGE</text>
+          <text x="56" y="128" fill="#F5F1E8" font-size="22" font-family="Fraunces" font-weight="700" id="hudConf">—%</text>
+          <text x="170" y="128" fill="#D69654" font-size="12" font-family="Inter" font-weight="600" letter-spacing="1">CONFIDENCE</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="scene-meta">
+      <div class="meta"><div class="meta-label">Stage</div><div class="meta-value copper" id="mStage">Idle</div></div>
+      <div class="meta-label" style="display:none"></div>
+      <div class="meta"><div class="meta-label">Confidence</div><div class="meta-value" id="mConf">—</div></div>
+      <div class="meta"><div class="meta-label">Latency</div><div class="meta-value ok" id="mLatency">—</div></div>
+      <div class="meta"><div class="meta-label">Individuals re-ID'd</div><div class="meta-value copper" id="mReid">—</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="phone-col">
+
+    <!-- PHONE -->
+    <div class="phone">
+      <div class="phone-top">
+        <div class="phone-name">Ravi (Wayanad)</div>
+        <div class="phone-time" id="phoneTime">WhatsApp · now</div>
+      </div>
+      <div class="phone-body" id="phoneBody">
+        <div class="phone-empty" id="phoneEmpty">No alerts yet. Run a scenario to see the farmer's view.</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <h3>Scenario<span class="hint">Set conditions · Run</span></h3>
+
+      <div class="ctrl-row">
+        <label class="ctrl-label">Lighting</label>
+        <div class="seg" id="segLight">
+          <button data-val="dusk" class="active">Dusk</button>
+          <button data-val="moonless">Moonless</button>
+          <button data-val="fog">Monsoon fog</button>
+          <button data-val="day">Daylight</button>
+        </div>
+      </div>
+
+      <div class="ctrl-row">
+        <label class="ctrl-label">Herd composition</label>
+        <div class="seg three" id="segHerd">
+          <button data-val="solo">Solo bull</button>
+          <button data-val="family" class="active">Family (4)</button>
+          <button data-val="matriarch">Matriarch + calves (6)</button>
+        </div>
+      </div>
+
+      <button class="run-btn" id="runBtn">▶  Run scenario</button>
+    </div>
+
+  </div>
+
+  <!-- LOG -->
+  <div class="log">
+    <h3>System log<span style="font-family:var(--sans);font-size:10px;color:rgba(10,10,10,0.4);font-weight:500;letter-spacing:0.1em;text-transform:uppercase">edge · cloud · farmer</span></h3>
+    <div class="log-list" id="log">
+      <div class="log-line"><span class="log-time">— : — : —</span><span class="log-tag info">ready</span><span>Awaiting scenario. Sentinel Pod-042 idle on solar.</span></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Alpha prototype &middot; runs in your browser &middot; no physical drone required &middot; <a href="index.html">back to GajaLens</a>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────
+// GajaLens · alpha prototype
+// ─────────────────────────────────────────────────────────
+// A deterministic simulation of the core loop:
+//   dusk patrol → detect → graduated deterrent → farmer alert
+// Confidence is modelled as a function of distance + lighting.
+// Herd retreat is animated on contact with the bee-buzz stage.
+// Re-ID is stubbed with a rotating small population of named
+// individuals that persist across runs (prior-visit count).
+// ─────────────────────────────────────────────────────────
+
+const scene = document.getElementById('scene');
+const herdG = document.getElementById('herd');
+const drone = document.getElementById('drone');
+const tether = document.getElementById('tether');
+const detRing = document.getElementById('detectionRing');
+const rumbleRing = document.getElementById('rumbleRing');
+const beeRing = document.getElementById('beeRing');
+const hud = document.getElementById('hud');
+const hudRange = document.getElementById('hudRange');
+const hudConf = document.getElementById('hudConf');
+const mStage = document.getElementById('mStage');
+const mConf = document.getElementById('mConf');
+const mLatency = document.getElementById('mLatency');
+const mReid = document.getElementById('mReid');
+const runBtn = document.getElementById('runBtn');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const logEl = document.getElementById('log');
+const phoneBody = document.getElementById('phoneBody');
+const phoneEmpty = document.getElementById('phoneEmpty');
+
+// persistent individuals (survive across runs via in-memory)
+const INDIVIDUALS = [
+  { id:'LKS-01', name:'Lakshmi',  prior:8, lastSeen:'11 days ago', note:'matriarch · ear-notch left' },
+  { id:'GAN-04', name:'Ganesh',   prior:3, lastSeen:'26 days ago', note:'sub-adult bull · tusk-scar' },
+  { id:'RDA-02', name:'Radha',    prior:5, lastSeen:'6 days ago',  note:'cow · split right ear' },
+  { id:'KLV-07', name:'Kalvi',    prior:1, lastSeen:'first sighting', note:'yearling · unmarked' },
+  { id:'ARJ-03', name:'Arjun',    prior:2, lastSeen:'48 days ago', note:'young bull · dark tail-tuft' },
+  { id:'PRV-05', name:'Parvati',  prior:6, lastSeen:'3 days ago',  note:'cow · twin calves' },
+];
+let nextIdx = 0;
+
+// state
+let lighting = 'dusk';
+let herdType = 'family';
+let running = false;
+let runCount = 0;
+let alertsSent = 0;
+
+// segmented control wiring
+function wireSeg(id,onChange){
+  const wrap = document.getElementById(id);
+  wrap.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      if(running) return;
+      wrap.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      onChange(b.dataset.val);
+    });
+  });
+}
+wireSeg('segLight', v=>lighting=v);
+wireSeg('segHerd',  v=>herdType=v);
+
+// logging
+function log(tag, text){
+  const now = new Date();
+  const t = now.toTimeString().slice(0,8);
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">${t}</span><span class="log-tag ${tag}">${tag}</span><span>${text}</span>`;
+  logEl.prepend(line);
+  // trim
+  while(logEl.children.length>40) logEl.removeChild(logEl.lastChild);
+}
+
+function setStatus(label, cls){
+  statusText.textContent = label;
+  statusDot.className = 'status-dot' + (cls?' '+cls:'');
+}
+
+function pushMsg(html, who){
+  if(phoneEmpty) phoneEmpty.remove();
+  const m = document.createElement('div');
+  m.className = 'msg ' + (who||'gaja');
+  m.innerHTML = html;
+  phoneBody.appendChild(m);
+  phoneBody.scrollTop = phoneBody.scrollHeight;
+}
+
+// lighting → detection fidelity multiplier
+const LIGHT = {
+  day:      { mult:1.00, penalty:  0, label:'daylight' },
+  dusk:     { mult:0.88, penalty: 40, label:'dusk' },
+  moonless: { mult:0.72, penalty: 90, label:'moonless night' },
+  fog:      { mult:0.58, penalty:140, label:'monsoon fog' },
+};
+
+const HERD = {
+  solo:     { count:1, label:'solo bull' },
+  family:   { count:4, label:'family of 4' },
+  matriarch:{ count:6, label:'matriarch + calves (6)' },
+};
+
+// elephants spawn at left edge and walk right toward the farm
+function makeElephant(i, total){
+  const yLane = 580 + (i%3)*40 - 40 + (Math.random()*14-7);
+  const startX = 120 + (i*46) + Math.random()*12;
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('transform', `translate(${startX},${yLane})`);
+  g.dataset.x = startX;
+  g.dataset.y = yLane;
+  g.dataset.vx = 0.85 + Math.random()*0.25;
+  const isCalf = (herdType==='matriarch' && i>=3);
+  const s = isCalf ? 0.55 : 1;
+  g.innerHTML = `
+    <g transform="scale(${s})">
+      <ellipse cx="0" cy="-18" rx="40" ry="22" fill="#2C5944" stroke="#1E3D2F" stroke-width="2"/>
+      <ellipse cx="-36" cy="-20" rx="14" ry="14" fill="#2C5944" stroke="#1E3D2F" stroke-width="2"/>
+      <path d="M-46,-24 Q-60,-14 -52,-2" stroke="#2C5944" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M-46,-18 L-52,-8 L-48,-8" stroke="#F5F1E8" stroke-width="1.5" fill="none"/>
+      <rect x="-16" y="4" width="5" height="18" fill="#2C5944"/>
+      <rect x="-6" y="4" width="5" height="18" fill="#2C5944"/>
+      <rect x="16" y="4" width="5" height="18" fill="#2C5944"/>
+      <rect x="26" y="4" width="5" height="18" fill="#2C5944"/>
+      <path d="M38,-18 Q44,-14 42,-6" stroke="#2C5944" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+  `;
+  herdG.appendChild(g);
+  return g;
+}
+
+function clearScene(){
+  herdG.innerHTML = '';
+  drone.setAttribute('opacity','0');
+  tether.setAttribute('opacity','0');
+  detRing.setAttribute('opacity','0');
+  detRing.setAttribute('r','0');
+  rumbleRing.setAttribute('opacity','0');
+  rumbleRing.setAttribute('r','0');
+  beeRing.setAttribute('opacity','0');
+  beeRing.setAttribute('r','0');
+  hud.setAttribute('opacity','0');
+  setStatus('Idle');
+  mStage.textContent = 'Idle';
+  mConf.textContent = '—';
+  mLatency.textContent = '—';
+  mReid.textContent = '—';
+}
+
+// Distance in simulated metres: horizontal pixel distance from the pod
+// mapped to "metres" using a scale that puts the forest edge at ~280 m
+// and the perimeter at ~60 m.
+function pxToMetres(px){ return Math.max(0, Math.round((px / 3.2))); }
+
+function elephantDistance(el){
+  const ex = parseFloat(el.dataset.x);
+  // drone x=1200 (from transform). Take nearest-edge distance to 900 perimeter.
+  return 1200 - ex;
+}
+
+function minHerdDistance(){
+  let min = Infinity;
+  [...herdG.children].forEach(el=>{
+    const d = elephantDistance(el);
+    if(d<min) min = d;
+  });
+  return min;
+}
+
+// confidence curve: rises from 0 at >350 px range to 0.96 at close
+// then modulated by lighting.
+function detectionConfidence(rangePx){
+  const meters = pxToMetres(rangePx);
+  const L = LIGHT[lighting];
+  if(meters > 280 + L.penalty) return 0;
+  const window = 260 - L.penalty*0.4;
+  const raw = 1 - Math.max(0, (meters - 40) / window);
+  const conf = Math.max(0, Math.min(0.97, raw * L.mult));
+  return conf;
+}
+
+function moveHerd(dx){
+  [...herdG.children].forEach(el=>{
+    const x = parseFloat(el.dataset.x) + dx * parseFloat(el.dataset.vx);
+    el.dataset.x = x;
+    el.setAttribute('transform', `translate(${x},${el.dataset.y})`);
+  });
+}
+
+function pickIndividual(){
+  const idv = INDIVIDUALS[nextIdx % INDIVIDUALS.length];
+  nextIdx++;
+  idv.prior += 1;
+  return idv;
+}
+
+// Run one full scenario
+async function runScenario(){
+  if(running) return;
+  running = true;
+  runCount++;
+  runBtn.disabled = true;
+  runBtn.textContent = 'Running…';
+  clearScene();
+
+  const herd = HERD[herdType];
+  const L = LIGHT[lighting];
+  log('info', `Scenario #${runCount}: ${herd.label} approaching under ${L.label}.`);
+  setStatus('Patrolling', 'warn');
+
+  // dusk patrol: launch drone
+  drone.setAttribute('opacity','1');
+  tether.setAttribute('opacity','0.6');
+  hud.setAttribute('opacity','1');
+  detRing.setAttribute('opacity','0.4');
+  await anim(detRing, 'r', 0, 320, 900);
+  log('info', 'Karuna on tether · 200 m leash · sweeping perimeter.');
+
+  // spawn herd
+  for(let i=0;i<herd.count;i++) makeElephant(i, herd.count);
+
+  // walk loop
+  const startTime = performance.now();
+  let detectedAt = null;
+  let individuals = [];
+  let stage = 'patrol';
+
+  await new Promise(resolve=>{
+    const tick = () => {
+      moveHerd(1.8);
+      const rPx = minHerdDistance();
+      const meters = pxToMetres(rPx);
+      hudRange.textContent = meters + ' m';
+      const conf = detectionConfidence(rPx);
+      hudConf.textContent = (conf*100).toFixed(0) + '%';
+      mConf.textContent = (conf*100).toFixed(0) + '%';
+
+      // detection
+      if(stage==='patrol' && conf >= 0.78){
+        detectedAt = performance.now();
+        stage = 'detected';
+        setStatus('Herd detected', 'alert');
+        mStage.textContent = 'Detected';
+        log('det', `Herd detected at ${meters} m · conf ${(conf*100).toFixed(0)}%.`);
+        // re-identify each animal
+        for(let i=0;i<herd.count;i++) individuals.push(pickIndividual());
+        mReid.textContent = individuals.length + ' / ' + herd.count;
+        log('det', `Re-ID: ${individuals.map(i=>i.name).join(', ')}.`);
+      }
+
+      // rumble deterrent
+      if(stage==='detected' && performance.now() - detectedAt > 600){
+        stage = 'rumble';
+        mStage.textContent = 'Infrasound';
+        log('act', 'Stage 1: infrasound rumble 18 Hz · bull warning cadence.');
+        rumbleRing.setAttribute('opacity','0.7');
+        anim(rumbleRing,'r',0,180,800);
+      }
+
+      // bee-buzz
+      if(stage==='rumble' && performance.now() - detectedAt > 1600){
+        stage = 'bee';
+        mStage.textContent = 'Bee-buzz';
+        log('act', 'Stage 2: bee-buzz playback 20 Hz · aversive cue.');
+        beeRing.setAttribute('opacity','0.8');
+        anim(beeRing,'r',0,260,900);
+        // herd begins to retreat
+        [...herdG.children].forEach(el=>{
+          el.dataset.vx = -0.8 - Math.random()*0.3;
+        });
+      }
+
+      // farmer alert
+      if(stage==='bee' && performance.now() - detectedAt > 2700){
+        stage = 'alert';
+        const latency = ((performance.now()-detectedAt)/1000).toFixed(1);
+        mStage.textContent = 'Alerting farmer';
+        mLatency.textContent = latency + ' s';
+        log('alert', `WhatsApp message sent to Ravi · latency ${latency}s from detection.`);
+        sendFarmerAlert(individuals, meters, conf);
+      }
+
+      // close
+      if(stage==='alert' && performance.now() - detectedAt > 4200){
+        stage = 'done';
+        setStatus('Herd retreating', 'warn');
+        mStage.textContent = 'Retreating';
+        log('ok', `Herd turned. Sentinel Pod-042 returning to patrol.`);
+      }
+
+      if(stage==='done' && minHerdDistance() > 400){
+        setStatus('Idle', '');
+        mStage.textContent = 'Patrol';
+        log('ok', `All individuals beyond 220 m. Encounter closed · logged to GajaNet.`);
+        return resolve();
+      }
+
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+
+  running = false;
+  runBtn.disabled = false;
+  runBtn.textContent = '▶  Run another scenario';
+  runBtn.classList.add('reset');
+}
+
+// small animation helper — animates an SVG attribute
+function anim(el, attr, from, to, durMs){
+  return new Promise(resolve=>{
+    const start = performance.now();
+    const step = (now)=>{
+      const t = Math.min(1, (now-start)/durMs);
+      const eased = 1 - Math.pow(1-t, 3);
+      el.setAttribute(attr, from + (to-from)*eased);
+      if(t<1) requestAnimationFrame(step);
+      else resolve();
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+function sendFarmerAlert(individuals, meters, conf){
+  alertsSent++;
+  const ids = individuals.map(i=>`<b>${i.name}</b> (${i.id}, ${i.prior}× prior)`).join(', ');
+  const time = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  pushMsg(`
+    <div class="msg-head">GajaLens · ${time}</div>
+    <div class="msg-body">
+      Namaskaram Ravi — a herd was seen at the perimeter.<br/><br/>
+      <b>${individuals.length} individual${individuals.length>1?'s':''}</b> re-identified: ${ids}.<br/>
+      Detected ${meters} m out · confidence ${(conf*100).toFixed(0)}%.<br/>
+      Infrasound + bee-buzz deployed. Herd is turning back toward the forest.<br/><br/>
+      Nothing for you to do. Sleep well. 🌙
+    </div>
+  `,'gaja');
+  if(alertsSent===1){
+    setTimeout(()=>{
+      pushMsg(`<div class="msg-head">Ravi · now</div><div class="msg-body">Nanni. Is Lakshmi with her calves?</div>`,'farmer');
+    }, 1600);
+    setTimeout(()=>{
+      pushMsg(`<div class="msg-head">GajaLens</div><div class="msg-body">Yes — two yearlings tonight. Dawn portrait will reach you by 06:10.</div>`,'gaja');
+    }, 3000);
+  }
+}
+
+runBtn.addEventListener('click', runScenario);
+
+// initial log
+log('info', 'Alpha prototype ready. Choose a lighting condition and herd, then Run.');
+
+</script>
+</body>
+</html>
