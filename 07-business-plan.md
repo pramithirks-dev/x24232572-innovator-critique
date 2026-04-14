@@ -63,7 +63,7 @@ GajaLens is a conservation-tech startup commercialising AI-vision drone perimete
 **Defensible moat**: proprietary 80k-frame Asian elephant dataset + individual re-ID embeddings + insurance underwriting partnership.
 
 ## 6. Team (target cap-table at seed)
-- **CEO** — wildlife biologist, ex-Wildlife Trust of India, 12 yrs HEC field experience
+- **Pramithi Nair — CEO** — wildlife biologist, ex-Wildlife Trust of India, 12 yrs HEC field experience
 - **CTO** — computer-vision engineer, ex-NVIDIA Robotics, IIT-Madras
 - **COO** — rural finance, ex-Kudumbashree, MBA IIM-Bangalore
 - **Advisory**: Lucy King (Save the Elephants, Oxford), R. Sukumar (IISc, India's leading elephant biologist)

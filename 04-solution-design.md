@@ -1,7 +1,7 @@
 # Solution Design — GajaLens
 
 ## Provider
-**GajaLens Technologies Pvt. Ltd.** — a for-profit conservation-tech startup headquartered in Bengaluru with a field operations base in Wayanad, Kerala. Co-founded by a wildlife biologist (ex-Wildlife Trust of India), a computer-vision engineer (ex-NVIDIA), and a rural-finance specialist (ex-Kudumbashree). Hybrid model: revenue-generating service for farmers + grant-funded co-deployment with state forest departments.
+**GajaLens Technologies Pvt. Ltd.** — a for-profit conservation-tech startup headquartered in Bengaluru with a field operations base in Wayanad, Kerala. Co-founded by Pramithi Nair (CEO, wildlife biologist, ex-Wildlife Trust of India), a computer-vision engineer (ex-NVIDIA), and a rural-finance specialist (ex-Kudumbashree). Hybrid model: revenue-generating service for farmers + grant-funded co-deployment with state forest departments.
 
 ## The Offering — Hybrid Hardware + Service
 
