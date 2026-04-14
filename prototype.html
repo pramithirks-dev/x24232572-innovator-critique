@@ -461,6 +461,22 @@ function makeElephant(i, total){
   return g;
 }
 
+// drone base anchor (directly above Sentinel Pod)
+const DRONE_BASE_X = 1200;
+const DRONE_BASE_Y = 480;
+
+function resetDroneAnchor(){
+  drone.setAttribute('transform',`translate(${DRONE_BASE_X},${DRONE_BASE_Y})`);
+  tether.setAttribute('x2', DRONE_BASE_X);
+  tether.setAttribute('y2', DRONE_BASE_Y);
+  detRing.setAttribute('cx', DRONE_BASE_X);
+  detRing.setAttribute('cy', DRONE_BASE_Y);
+  rumbleRing.setAttribute('cx', DRONE_BASE_X);
+  rumbleRing.setAttribute('cy', DRONE_BASE_Y);
+  beeRing.setAttribute('cx', DRONE_BASE_X);
+  beeRing.setAttribute('cy', DRONE_BASE_Y);
+}
+
 function clearScene(){
   herdG.innerHTML = '';
   drone.setAttribute('opacity','0');
@@ -472,6 +488,7 @@ function clearScene(){
   beeRing.setAttribute('opacity','0');
   beeRing.setAttribute('r','0');
   hud.setAttribute('opacity','0');
+  resetDroneAnchor();
   setStatus('Idle');
   mStage.textContent = 'Idle';
   mConf.textContent = '—';
@@ -553,12 +570,30 @@ async function runScenario(){
 
   // walk loop
   const startTime = performance.now();
+  const droneT0 = performance.now();
   let detectedAt = null;
   let individuals = [];
   let stage = 'patrol';
 
   await new Promise(resolve=>{
     const tick = () => {
+      // drone hover + left-right sweep on tether; leans toward herd once detected
+      const dt = performance.now() - droneT0;
+      const sweepX = Math.sin(dt / 1400) * 90;
+      const bobY = Math.sin(dt / 520) * 3;
+      const lockOffset = (stage==='detected' || stage==='rumble' || stage==='bee') ? -45 : 0;
+      const dX = DRONE_BASE_X + sweepX + lockOffset;
+      const dY = DRONE_BASE_Y + bobY;
+      drone.setAttribute('transform', `translate(${dX},${dY})`);
+      tether.setAttribute('x2', dX);
+      tether.setAttribute('y2', dY);
+      detRing.setAttribute('cx', dX);
+      detRing.setAttribute('cy', dY);
+      rumbleRing.setAttribute('cx', dX);
+      rumbleRing.setAttribute('cy', dY);
+      beeRing.setAttribute('cx', dX);
+      beeRing.setAttribute('cy', dY);
+
       moveHerd(1.8);
       const rPx = minHerdDistance();
       const meters = pxToMetres(rPx);
