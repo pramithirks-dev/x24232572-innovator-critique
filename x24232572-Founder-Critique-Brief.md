@@ -420,12 +420,16 @@ Condensed output of the Fact-Check Researcher subagent. Full transcripts are ava
 
 ## Appendix D - Orchestration architecture
 
-The critique was produced by a multi-agent pipeline designed specifically for this work. The architecture file is at `agent-architecture.html` in the project root. Waves and agents:
+The critique in this brief was produced by a multi-agent pipeline designed specifically for the job. Sixteen specialised agents are organised into two waves with adversarial isolation between Wave 1 critique agents (they never see each other's drafts), a citation-validating gate, and a dissent-mandated stress-test layer above the decision and planning agents. The feedback arc on the left carries every High-severity Part A finding into the Part F compliance budget.
+
+![Multi-agent orchestration architecture for the GajaLens critique pipeline](architecture.png)
+
+**Waves and agents:**
 
 1. **Wave 1 - parallel critique, adversarial isolation:** Regulatory Auditor (Part A), Trust / Persona Auditor (Part B), Fact-Check Researcher (Part C). None of these saw each other's drafts.
-2. **Gate - Grounding Validator** rejects any finding without a verbatim `file:line` quote.
-3. **Editor + Correction Report + Prototype Builder** (Parts C and D).
-4. **Wave 2 - stress-test and decision support:** Technical / Business / Domain advisors (each under a dissent mandate), Market Research, Scenario Modeller, Pre-mortem, Red-Team Trio.
+2. **Gate - Grounding Validator** rejects any finding without a verbatim file-and-line quote from the source artefacts.
+3. **Artefact Editor + Correction Report + Prototype Builder** (Parts C and D).
+4. **Wave 2 - stress-test and decision support:** Technical / Business / Domain advisors (each under an explicit dissent mandate), Market Research, Scenario Modeller, Pre-mortem, Red-Team Trio.
 5. **Decision Synthesiser** produced the 250-word ship position in Part E.
 6. **Plan Architect** pulled every Part A High-severity finding into Part F as a compliance line-item.
 

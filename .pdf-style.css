@@ -243,6 +243,23 @@ body > p:last-of-type {
   padding-top: 10pt;
 }
 
+/* ---------- IMAGES ---------- */
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 14pt auto;
+  page-break-inside: avoid;
+  page-break-before: auto;
+}
+
+/* The orchestration architecture diagram is tall and detail-rich.
+   Give it its own page and let it fill the print area. */
+p > img {
+  max-height: 245mm;
+  margin: 10pt auto;
+}
+
 /* ---------- WIDOW / ORPHAN CONTROL ---------- */
 p, li { orphans: 2; widows: 2; }
 h1, h2, h3, h4 { page-break-after: avoid; }
