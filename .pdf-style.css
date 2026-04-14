@@ -1,0 +1,188 @@
+@page {
+  size: A4;
+  margin: 18mm 16mm 18mm 16mm;
+}
+
+:root {
+  --forest: #1E3D2F;
+  --forest-deep: #0F2118;
+  --copper: #B87333;
+  --copper-light: #D69654;
+  --bone: #F5F1E8;
+  --bone-warm: #EBE3D0;
+  --ink: #0A0A0A;
+}
+
+html { font-size: 10.5pt; }
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #0A0A0A;
+  line-height: 1.5;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+h1 {
+  font-family: Georgia, 'Fraunces', serif;
+  font-size: 26pt;
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 14pt 0;
+  padding-bottom: 10pt;
+  border-bottom: 3pt solid var(--copper);
+  page-break-after: avoid;
+}
+
+h2 {
+  font-family: Georgia, 'Fraunces', serif;
+  font-size: 18pt;
+  color: var(--forest);
+  letter-spacing: -0.015em;
+  margin: 28pt 0 10pt 0;
+  padding-top: 10pt;
+  border-top: 1pt solid var(--bone-warm);
+  page-break-after: avoid;
+  page-break-before: auto;
+}
+
+h3 {
+  font-family: Georgia, 'Fraunces', serif;
+  font-size: 13pt;
+  color: var(--forest);
+  margin: 18pt 0 6pt 0;
+  page-break-after: avoid;
+}
+
+h4 {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--copper);
+  margin: 14pt 0 6pt 0;
+  font-weight: 700;
+}
+
+p { margin: 0 0 8pt 0; }
+
+strong { color: var(--forest); font-weight: 700; }
+em { font-style: italic; }
+
+a { color: var(--copper); text-decoration: none; word-break: break-all; }
+
+hr {
+  border: none;
+  border-top: 1pt dashed var(--bone-warm);
+  margin: 16pt 0;
+}
+
+ul, ol {
+  margin: 0 0 8pt 18pt;
+  padding: 0;
+}
+li { margin-bottom: 4pt; }
+
+blockquote {
+  border-left: 3pt solid var(--copper);
+  padding: 2pt 12pt;
+  margin: 8pt 0;
+  color: rgba(10, 10, 10, 0.7);
+  font-style: italic;
+}
+
+code {
+  font-family: 'Consolas', 'Menlo', 'SFMono-Regular', monospace;
+  font-size: 0.88em;
+  background: var(--bone-warm);
+  padding: 1pt 4pt;
+  border-radius: 2pt;
+  color: var(--forest-deep);
+  word-break: break-all;
+}
+
+pre {
+  background: var(--bone-warm);
+  padding: 10pt 12pt;
+  border-radius: 4pt;
+  overflow-x: auto;
+  font-size: 9pt;
+  line-height: 1.35;
+}
+pre code { background: none; padding: 0; }
+
+/* Tables - the critical rendering */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10pt 0 14pt 0;
+  font-size: 8.5pt;
+  page-break-inside: auto;
+}
+
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; page-break-after: auto; }
+
+th {
+  background: var(--forest);
+  color: var(--bone);
+  text-align: left;
+  padding: 6pt 8pt;
+  font-weight: 700;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 0.5pt solid var(--forest);
+  vertical-align: top;
+}
+
+td {
+  padding: 5pt 8pt;
+  border: 0.5pt solid var(--bone-warm);
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+tbody tr:nth-child(even) td {
+  background: #FAF7EF;
+}
+
+td code {
+  font-size: 7.5pt;
+  background: rgba(184, 115, 51, 0.08);
+  color: var(--forest-deep);
+}
+
+/* First paragraph after heading has less top margin */
+h1 + p, h2 + p, h3 + p { margin-top: 0; }
+
+/* Document metadata block at top */
+body > p:nth-of-type(1),
+body > p:nth-of-type(2),
+body > p:nth-of-type(3),
+body > p:nth-of-type(4) {
+  margin-bottom: 3pt;
+  font-size: 9.5pt;
+}
+
+/* Force page breaks before top-level sections */
+h2 {
+  page-break-before: auto;
+}
+
+/* Avoid widow/orphan lines */
+p, li { orphans: 2; widows: 2; }
+
+/* End marker */
+body > p:last-of-type {
+  text-align: center;
+  font-style: italic;
+  color: rgba(10, 10, 10, 0.5);
+  margin-top: 24pt;
+  font-size: 9pt;
+}
