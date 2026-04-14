@@ -226,15 +226,36 @@
           <text y="40" text-anchor="middle" fill="#B87333" font-size="12" font-family="Inter" font-weight="700" letter-spacing="1">POD-042</text>
         </g>
 
-        <!-- Drone Karuna -->
+        <!-- Drone Karuna - quadcopter with spinning rotors -->
         <g id="drone" transform="translate(1200,480)" opacity="0">
-          <circle cx="0" cy="0" r="10" fill="#F5F1E8"/>
-          <line x1="-18" y1="-18" x2="18" y2="18" stroke="#B87333" stroke-width="2"/>
-          <line x1="18" y1="-18" x2="-18" y2="18" stroke="#B87333" stroke-width="2"/>
-          <circle cx="-18" cy="-18" r="4" fill="#B87333"/>
-          <circle cx="18" cy="-18" r="4" fill="#B87333"/>
-          <circle cx="-18" cy="18" r="4" fill="#B87333"/>
-          <circle cx="18" cy="18" r="4" fill="#B87333"/>
+          <!-- arms (X frame) -->
+          <line x1="-24" y1="-24" x2="24" y2="24" stroke="#B87333" stroke-width="2.5"/>
+          <line x1="24" y1="-24" x2="-24" y2="24" stroke="#B87333" stroke-width="2.5"/>
+          <!-- body -->
+          <circle cx="0" cy="0" r="11" fill="#F5F1E8" stroke="#B87333" stroke-width="2"/>
+          <circle cx="0" cy="0" r="3" fill="#B87333"/>
+          <!-- rotor motor pods -->
+          <circle cx="-24" cy="-24" r="4" fill="#1E3D2F" stroke="#B87333" stroke-width="1.2"/>
+          <circle cx="24" cy="-24" r="4" fill="#1E3D2F" stroke="#B87333" stroke-width="1.2"/>
+          <circle cx="-24" cy="24" r="4" fill="#1E3D2F" stroke="#B87333" stroke-width="1.2"/>
+          <circle cx="24" cy="24" r="4" fill="#1E3D2F" stroke="#B87333" stroke-width="1.2"/>
+          <!-- spinning rotor blades (SMIL animated) -->
+          <g>
+            <ellipse cx="-24" cy="-24" rx="13" ry="2" fill="#D69654" opacity="0.55"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 -24 -24" to="360 -24 -24" dur="0.15s" repeatCount="indefinite"/>
+          </g>
+          <g>
+            <ellipse cx="24" cy="-24" rx="13" ry="2" fill="#D69654" opacity="0.55"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 24 -24" to="-360 24 -24" dur="0.15s" repeatCount="indefinite"/>
+          </g>
+          <g>
+            <ellipse cx="-24" cy="24" rx="13" ry="2" fill="#D69654" opacity="0.55"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 -24 24" to="-360 -24 24" dur="0.15s" repeatCount="indefinite"/>
+          </g>
+          <g>
+            <ellipse cx="24" cy="24" rx="13" ry="2" fill="#D69654" opacity="0.55"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 24 24" to="360 24 24" dur="0.15s" repeatCount="indefinite"/>
+          </g>
         </g>
 
         <!-- Tether -->
@@ -433,28 +454,56 @@ const HERD = {
   matriarch:{ count:6, label:'matriarch + calves (6)' },
 };
 
-// elephants spawn at left edge and walk right toward the farm
+// elephants spawn at left edge and walk right toward the farm.
+// The drawing faces right (head on the right, tail on the left) so
+// they walk forward into the perimeter instead of rump-first.
 function makeElephant(i, total){
-  const yLane = 580 + (i%3)*40 - 40 + (Math.random()*14-7);
-  const startX = 120 + (i*46) + Math.random()*12;
+  // lane positions put feet near the ground plane (y=680)
+  const yLane = 654 + (i%3)*10 - 10 + (Math.random()*8-4);
+  const startX = 120 + (i*52) + Math.random()*16;
   const g = document.createElementNS('http://www.w3.org/2000/svg','g');
   g.setAttribute('transform', `translate(${startX},${yLane})`);
   g.dataset.x = startX;
   g.dataset.y = yLane;
   g.dataset.vx = 0.85 + Math.random()*0.25;
   const isCalf = (herdType==='matriarch' && i>=3);
-  const s = isCalf ? 0.55 : 1;
+  const s = isCalf ? 0.62 : 1;
+  // Asian elephant side-view silhouette, facing right
   g.innerHTML = `
     <g transform="scale(${s})">
-      <ellipse cx="0" cy="-18" rx="40" ry="22" fill="#2C5944" stroke="#1E3D2F" stroke-width="2"/>
-      <ellipse cx="-36" cy="-20" rx="14" ry="14" fill="#2C5944" stroke="#1E3D2F" stroke-width="2"/>
-      <path d="M-46,-24 Q-60,-14 -52,-2" stroke="#2C5944" stroke-width="6" fill="none" stroke-linecap="round"/>
-      <path d="M-46,-18 L-52,-8 L-48,-8" stroke="#F5F1E8" stroke-width="1.5" fill="none"/>
-      <rect x="-16" y="4" width="5" height="18" fill="#2C5944"/>
-      <rect x="-6" y="4" width="5" height="18" fill="#2C5944"/>
-      <rect x="16" y="4" width="5" height="18" fill="#2C5944"/>
-      <rect x="26" y="4" width="5" height="18" fill="#2C5944"/>
-      <path d="M38,-18 Q44,-14 42,-6" stroke="#2C5944" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- legs first so body covers their tops -->
+      <rect x="-28" y="4" width="10" height="23" rx="3" fill="#2C5944" stroke="#1E3D2F" stroke-width="1.2"/>
+      <rect x="-15" y="4" width="10" height="23" rx="3" fill="#2C5944" stroke="#1E3D2F" stroke-width="1.2"/>
+      <rect x="8"   y="4" width="10" height="23" rx="3" fill="#2C5944" stroke="#1E3D2F" stroke-width="1.2"/>
+      <rect x="22"  y="4" width="10" height="23" rx="3" fill="#2C5944" stroke="#1E3D2F" stroke-width="1.2"/>
+      <!-- body with rounded back hump -->
+      <path d="M -34 6
+               Q -42 -4 -40 -14
+               Q -36 -22 -26 -24
+               Q -14 -26 -2 -26
+               Q 10 -26 20 -22
+               Q 28 -16 32 -8
+               L 36 -2
+               L 36 6 Z"
+            fill="#2C5944" stroke="#1E3D2F" stroke-width="1.5" stroke-linejoin="round"/>
+      <!-- head (overlapping body front) -->
+      <ellipse cx="34" cy="-14" rx="14" ry="13" fill="#2C5944" stroke="#1E3D2F" stroke-width="1.5"/>
+      <!-- ear: small rounded triangle characteristic of Asian elephant -->
+      <path d="M 26 -22 Q 18 -28 22 -32 Q 34 -32 33 -18 Q 30 -14 26 -22 Z"
+            fill="#1A3028"/>
+      <!-- trunk curving down and forward -->
+      <path d="M 46 -12 Q 56 -4 54 6 Q 52 12 58 14"
+            stroke="#2C5944" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M 47 -10 Q 54 -3 52 5"
+            stroke="#1A3028" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+      <!-- eye -->
+      <circle cx="37" cy="-16" r="1.3" fill="#F5F1E8"/>
+      <!-- small tusk -->
+      <path d="M 45 -5 L 51 -1" stroke="#F5F1E8" stroke-width="2" stroke-linecap="round" opacity="0.92"/>
+      <!-- tail with tuft -->
+      <path d="M -38 -10 Q -46 -4 -46 4"
+            stroke="#2C5944" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="-46" cy="5" r="2" fill="#2C5944"/>
     </g>
   `;
   herdG.appendChild(g);
@@ -579,9 +628,9 @@ async function runScenario(){
     const tick = () => {
       // drone hover + left-right sweep on tether; leans toward herd once detected
       const dt = performance.now() - droneT0;
-      const sweepX = Math.sin(dt / 1400) * 90;
-      const bobY = Math.sin(dt / 520) * 3;
-      const lockOffset = (stage==='detected' || stage==='rumble' || stage==='bee') ? -45 : 0;
+      const sweepX = Math.sin(dt / 1300) * 150;
+      const bobY = Math.sin(dt / 480) * 6;
+      const lockOffset = (stage==='detected' || stage==='rumble' || stage==='bee') ? -70 : 0;
       const dX = DRONE_BASE_X + sweepX + lockOffset;
       const dY = DRONE_BASE_Y + bobY;
       drone.setAttribute('transform', `translate(${dX},${dY})`);
